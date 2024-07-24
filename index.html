@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>번개피하기 게임</title>
+    <style>
+        body {
+            margin: 600px 50px 100px 100px;
+        }
+
+        .target {
+            width: 50px;
+            height: 50px;
+            background-color: teal;
+            transition: 0.2s;
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            padding: 20px;
+            border: 1px solid black;
+        }
+
+        .lightning {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="target"></div>
+    <div class="timer">생존 시간: 0 ms</div>
+
+    <script>
+        // 화살표 키를 눌렀을 때, 왼쪽 화살표를 누르면 상자를 왼쪽으로, 오른쪽 화살표를 누르면 상자를 왼쪽으로 이동합니다.
+        const target = document.querySelector('.target');
+        const timerDisplay = document.querySelector('.timer');
+
+        let pos = 0;
+        let startTime;
+        let gameInterval, timerInterval;
+
+        function move(event) {
+            const keyName = event.key;
+            const targetPos = target.getBoundingClientRect();
+
+            if (keyName === 'ArrowRight') {
+                if (!(targetPos.right + 15 > window.innerWidth)) {
+                    pos += 15;
+                    target.style.transform = `translateX(${pos}px)`;
+                }
+            }
+
+            if (keyName === 'ArrowLeft') {
+                if (!(targetPos.left - 15 < 0)) {
+                    pos -= 15;
+                    target.style.transform = `translateX(${pos}px)`;
+                }
+            }
+        }
+
+        document.addEventListener('keydown', move);
+
+        function spawnLightning() {
+            const lightning = document.createElement('img');
+            lightning.src = 'lightning.jpg';
+            lightning.className = 'lightning';
+            lightning.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+            document.body.appendChild(lightning);
+
+            let fallInterval = setInterval(() => {
+                let lightningPos = lightning.getBoundingClientRect();
+                let targetPos = target.getBoundingClientRect();
+
+                if (lightningPos.bottom >= window.innerHeight) {
+                    clearInterval(fallInterval);
+                    lightning.remove();
+                } else {
+                    lightning.style.top = `${lightningPos.top + 5}px`;
+                }
+
+                if (lightningPos.bottom >= targetPos.top &&
+                    lightningPos.top <= targetPos.bottom &&
+                    lightningPos.right >= targetPos.left &&
+                    lightningPos.left <= targetPos.right) {
+
+                    clearInterval(fallInterval);
+                    clearInterval(gameInterval);
+                    clearInterval(timerInterval);
+
+                    alert(`GAME OVER! 생존한 시간은 ${Date.now() - startTime} ms 입니다!`);
+
+                    endGame();
+                }
+            }, 20);
+        }
+
+        function startGame() {
+            startTime = Date.now();
+            gameInterval = setInterval(spawnLightning, 1000);
+            timerInterval = setInterval(() => {
+                timerDisplay.textContent = `생존 시간: ${Date.now() - startTime} ms`;
+            }, 50);
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            clearInterval(timerInterval);
+
+            const lightnings = document.querySelectorAll('.lightning');
+            lightnings.forEach(lightning => lightning.remove());
+
+            const restart = confirm(`GAME OVER! 생존한 시간은 ${Date.now() - startTime} ms 입니다!\n다시 시작하겠습니까?`);
+            if (restart) {
+                location.reload();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            startGame();
+            document.addEventListener('keydown', move);
+        });
+    </script>
+</body>
+
+</html>
