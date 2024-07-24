@@ -122,7 +122,7 @@
             const lightnings = document.querySelectorAll('.lightning');
             lightnings.forEach(lightning => lightning.remove());
 
-            const restart = confirm(`GAME OVER! 생존한 시간은 ${Date.now() - startTime} ms 입니다!\n다시 시작하겠습니까?`);
+            const restart = confirm(`다시 시작하겠습니까?`);
             if (restart) {
                 location.reload();
             }
